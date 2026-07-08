@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>建設業経理士2級 単語カード</title>
+<style>
+  :root{
+    --bg:#0f1720; --card:#17212b; --card2:#1e2a37; --line:#2b3a49;
+    --txt:#e8eef4; --sub:#9db0c2; --accent:#4ca3ff; --accent2:#38d39f;
+    --good:#38d39f; --warn:#ffb84c;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",sans-serif;
+    background:var(--bg);color:var(--txt);line-height:1.6;}
+  header{padding:16px 14px 10px;text-align:center;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#132030,#0f1720);position:sticky;top:0;z-index:10;}
+  header h1{margin:0;font-size:16px;}
+  header .prog{color:var(--sub);font-size:12px;margin-top:3px;}
+  .wrap{max-width:560px;margin:0 auto;padding:14px;}
+  .chips{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px;}
+  .chips button{flex:0 0 auto;background:var(--card);color:var(--sub);border:1px solid var(--line);
+    border-radius:20px;padding:7px 13px;font-size:13px;cursor:pointer;white-space:nowrap;}
+  .chips button.active{background:var(--accent);color:#06121f;border-color:var(--accent);font-weight:700;}
+  .counter{text-align:center;color:var(--sub);font-size:12px;margin:2px 0 10px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;
+    min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:26px 20px;text-align:center;cursor:pointer;user-select:none;position:relative;
+    transition:transform .12s;}
+  .card:active{transform:scale(.99);}
+  .card .cat{position:absolute;top:12px;left:14px;font-size:11px;color:var(--sub);
+    background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:2px 8px;}
+  .card .known-badge{position:absolute;top:12px;right:14px;font-size:11px;}
+  .front .term{font-size:30px;font-weight:800;letter-spacing:.02em;}
+  .front .yomi{font-size:13px;color:var(--sub);margin-top:6px;}
+  .front .hint{position:absolute;bottom:14px;font-size:11px;color:var(--sub);}
+  .back{display:none;width:100%;}
+  .card.flipped .front{display:none;}
+  .card.flipped .back{display:block;}
+  .back .term{font-size:19px;font-weight:700;margin-bottom:10px;color:var(--accent2);}
+  .back .row{font-size:14px;margin:7px 0;text-align:left;}
+  .back .label{color:var(--sub);font-size:12px;}
+  .back .seitai{background:var(--card2);border:1px solid var(--line);border-radius:8px;
+    padding:6px 10px;display:inline-block;font-size:13px;margin-top:4px;}
+  .kubun{display:inline-block;font-size:12px;padding:2px 8px;border-radius:10px;margin-top:6px;}
+  .kubun.asset{background:#183a2e;color:#7ee0b8;border:1px solid #2f6b52;}
+  .kubun.liab{background:#3a2a18;color:#f0c48a;border:1px solid #6b512f;}
+  .kubun.rev{background:#16304a;color:#8ac4f0;border:1px solid #2f5a80;}
+  .kubun.exp{background:#3a1e22;color:#f0a0a8;border:1px solid #6b3540;}
+  .kubun.note{background:var(--card2);color:var(--sub);border:1px solid var(--line);}
+  .controls{display:flex;gap:8px;margin-top:14px;}
+  .controls button{flex:1;border:none;border-radius:12px;padding:14px 0;font-size:15px;
+    font-weight:700;cursor:pointer;}
+  .nav{display:flex;gap:8px;margin-top:8px;}
+  .nav button{flex:1;background:var(--card);color:var(--txt);border:1px solid var(--line);
+    border-radius:12px;padding:12px 0;font-size:14px;cursor:pointer;}
+  .btn-known{background:var(--good);color:#06201a;}
+  .btn-still{background:var(--warn);color:#3a2600;}
+  .tools{display:flex;justify-content:center;gap:14px;margin-top:12px;}
+  .tools button{background:transparent;color:var(--sub);border:1px solid var(--line);
+    border-radius:10px;padding:8px 14px;font-size:12px;cursor:pointer;}
+  .empty{text-align:center;color:var(--sub);padding:40px 10px;}
+  footer{text-align:center;color:var(--sub);font-size:11px;padding:20px 12px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>📇 建設業経理士2級 単語カード</h1>
+  <div class="prog" id="prog"></div>
+</header>
+
+<div class="wrap">
+  <div class="chips" id="chips"></div>
+  <div class="counter" id="counter"></div>
+  <div id="cardArea"></div>
+  <div id="controls"></div>
+</div>
+
+<footer>
+  タップでめくる／「覚えた」「まだ」で仕分け。進捗はこの端末に保存されます。<br>
+  作成：2026/7/9 ／ 建設業経理士2級 単語カード
+</footer>
+
+<script>
+"use strict";
+const LS = "kenkei2_cards_v1";
+
+/* ===== カードデータ ===== */
+const CARDS = [
+  // 建設業の科目
+  {id:"c1", cat:"建設業科目", term:"完成工事未収入金", yomi:"かんせいこうじみしゅうにゅうきん",
+   seitai:"＝売掛金", mean:"工事の代金を後日もらう権利", kubun:"資産（BS）", k:"asset"},
+  {id:"c2", cat:"建設業科目", term:"未成工事支出金", yomi:"みせいこうじししゅつきん",
+   seitai:"＝仕掛品", mean:"工事にかかったお金をためる箱。完成したら完成工事原価へ振り替える", kubun:"資産（BS）", k:"asset"},
+  {id:"c3", cat:"建設業科目", term:"工事未払金", yomi:"こうじみばらいきん",
+   seitai:"＝買掛金", mean:"工事関連の、まだ払っていない代金", kubun:"負債（BS）", k:"liab"},
+  {id:"c4", cat:"建設業科目", term:"未成工事受入金", yomi:"みせいこうじうけいれきん",
+   seitai:"＝前受金", mean:"工事の前に先にもらった手付金。あとで工事を渡す義務", kubun:"負債（BS）", k:"liab"},
+  {id:"c5", cat:"建設業科目", term:"完成工事高", yomi:"かんせいこうじだか",
+   seitai:"＝売上", mean:"工事が完成した分の売上", kubun:"収益（PL）", k:"rev"},
+  {id:"c6", cat:"建設業科目", term:"完成工事原価", yomi:"かんせいこうじげんか",
+   seitai:"＝売上原価", mean:"完成した工事にかかった原価", kubun:"費用（PL）", k:"exp"},
+  {id:"c7", cat:"建設業科目", term:"材料貯蔵品", yomi:"ざいりょうちょぞうひん",
+   seitai:"＝貯蔵品", mean:"保管している材料などのストック", kubun:"資産（BS）", k:"asset"},
+
+  // 現金・当座・銀行勘定調整
+  {id:"c8", cat:"銀行勘定調整", term:"未取付小切手", yomi:"みとりつけこぎって",
+   seitai:"", mean:"振り出したが、相手がまだ銀行に持ち込んでいない小切手", kubun:"銀行側・減算／仕訳不要", k:"note"},
+  {id:"c9", cat:"銀行勘定調整", term:"時間外預入", yomi:"じかんがいあずけいれ",
+   seitai:"", mean:"夜間金庫などで預けたが、銀行の入金処理は翌日", kubun:"銀行側・加算／仕訳不要", k:"note"},
+  {id:"c10", cat:"銀行勘定調整", term:"未取立小切手", yomi:"みとりたてこぎって",
+   seitai:"", mean:"銀行に預けたが、銀行がまだ取り立てていない", kubun:"銀行側・加算／仕訳不要", k:"note"},
+  {id:"c11", cat:"銀行勘定調整", term:"連絡未通知", yomi:"れんらくみつうち",
+   seitai:"", mean:"振込や引落を銀行は処理済だが、当社が知らなかった", kubun:"企業側・調整／仕訳必要", k:"note"},
+  {id:"c12", cat:"銀行勘定調整", term:"両者区分調整法", yomi:"りょうしゃくぶんちょうせいほう",
+   seitai:"", mean:"企業側・銀行側の両方を調整し、同じ正しい残高に一致させる方法", kubun:"（2級の主流）", k:"note"},
+
+  // 仕入・売上（3章）
+  {id:"c13", cat:"仕入・売上", term:"前渡金", yomi:"まえわたしきん",
+   seitai:"＝前払金", mean:"材料や外注に、モノを受け取る前に先に払ったお金", kubun:"資産（BS）", k:"asset"},
+  {id:"c14", cat:"仕入・売上", term:"材料", yomi:"ざいりょう",
+   seitai:"", mean:"購入して保管中の材料。工事で使ったら未成工事支出金へ振り替える", kubun:"資産（BS）", k:"asset"},
+  {id:"c15", cat:"仕入・売上", term:"値引き", yomi:"ねびき",
+   seitai:"", mean:"品質不良やキズなどで代金をまける／まけてもらう", kubun:"売上・仕入の減額", k:"note"},
+  {id:"c16", cat:"仕入・売上", term:"割戻し", yomi:"わりもどし",
+   seitai:"リベート", mean:"大量に取引したお礼として代金を戻す／戻される", kubun:"売上・仕入の減額", k:"note"},
+  {id:"c17", cat:"仕入・売上", term:"仕入割引", yomi:"しいれわりびき",
+   seitai:"", mean:"買掛金を早く払ったことで受ける割引（利息の性格）", kubun:"営業外収益（PL）", k:"rev"},
+  {id:"c18", cat:"仕入・売上", term:"売上割引", yomi:"うりあげわりびき",
+   seitai:"", mean:"売掛金を早く払ってもらうため与える割引（利息の性格）", kubun:"営業外費用（PL）", k:"exp"}
+];
+
+/* ===== 状態 ===== */
+let st = load();
+function load(){ try{ return JSON.parse(localStorage.getItem(LS))||{}; }catch(e){ return {}; } }
+function save(){ localStorage.setItem(LS, JSON.stringify(st)); }
+st.known = st.known || {};          // {c1:true}
+st.filter = st.filter || "すべて";
+let order = [];                      // 現在の表示順(id配列)
+let pos = 0;
+let flipped = false;
+
+const CATS = ["すべて","建設業科目","銀行勘定調整","仕入・売上","まだ"];
+
+/* ===== 表示対象を作る ===== */
+function buildOrder(){
+  let list;
+  if(st.filter==="まだ") list = CARDS.filter(c=>!st.known[c.id]);
+  else if(st.filter==="すべて") list = CARDS.slice();
+  else list = CARDS.filter(c=>c.cat===st.filter);
+  order = list.map(c=>c.id);
+  if(pos>=order.length) pos = 0;
+}
+
+/* ===== 描画 ===== */
+function renderChips(){
+  document.getElementById("chips").innerHTML = CATS.map(c=>
+    `<button data-c="${c}" class="${st.filter===c?'active':''}">${c}</button>`).join("");
+}
+function renderProg(){
+  const total = CARDS.length;
+  const known = CARDS.filter(c=>st.known[c.id]).length;
+  document.getElementById("prog").textContent = `覚えた ${known} / 全 ${total} 枚`;
+}
+function renderCard(){
+  const area = document.getElementById("cardArea");
+  const ctrl = document.getElementById("controls");
+  if(order.length===0){
+    area.innerHTML = `<div class="empty">このカテゴリのカードはありません🎉<br>「まだ」が空なら全部覚えた証拠！</div>`;
+    ctrl.innerHTML = "";
+    document.getElementById("counter").textContent = "";
+    return;
+  }
+  const c = CARDS.find(x=>x.id===order[pos]);
+  const isKnown = !!st.known[c.id];
+  document.getElementById("counter").textContent = `${pos+1} / ${order.length} 枚（${st.filter}）`;
+  area.innerHTML =
+    `<div class="card ${flipped?'flipped':''}" id="theCard">
+       <div class="cat">${c.cat}</div>
+       <div class="known-badge">${isKnown?'✅':''}</div>
+       <div class="front">
+         <div class="term">${c.term}</div>
+         <div class="yomi">${c.yomi||''}</div>
+         <div class="hint">タップで答え</div>
+       </div>
+       <div class="back">
+         <div class="term">${c.term}</div>
+         ${c.seitai?`<div><span class="seitai">${c.seitai}</span></div>`:''}
+         <div class="row"><span class="label">意味：</span>${c.mean}</div>
+         <div><span class="kubun ${c.k}">${c.kubun}</span></div>
+       </div>
+     </div>`;
+  ctrl.innerHTML =
+    `<div class="controls">
+       <button class="btn-still" id="still">まだ</button>
+       <button class="btn-known" id="known">覚えた</button>
+     </div>
+     <div class="nav">
+       <button id="prev">← 前</button>
+       <button id="next">次 →</button>
+     </div>
+     <div class="tools">
+       <button id="shuffle">🔀 シャッフル</button>
+       <button id="reset">進捗リセット</button>
+     </div>`;
+  document.getElementById("theCard").onclick = ()=>{ flipped=!flipped; renderCard(); };
+  document.getElementById("known").onclick = ()=>{ st.known[c.id]=true; save(); next(); };
+  document.getElementById("still").onclick = ()=>{ delete st.known[c.id]; save(); next(); };
+  document.getElementById("prev").onclick = ()=>{ pos=(pos-1+order.length)%order.length; flipped=false; renderCard(); renderProg(); };
+  document.getElementById("next").onclick = next;
+  document.getElementById("shuffle").onclick = ()=>{ shuffle(); pos=0; flipped=false; renderCard(); };
+  document.getElementById("reset").onclick = ()=>{ if(confirm("覚えた記録を全部消しますか?")){ st.known={}; save(); buildOrder(); renderAll(); } };
+  renderProg();
+}
+function next(){
+  if(st.filter==="まだ"){ buildOrder(); if(order.length===0){ renderCard(); return; } if(pos>=order.length) pos=0; }
+  else pos=(pos+1)%order.length;
+  flipped=false; renderCard(); renderProg();
+}
+function shuffle(){ for(let i=order.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [order[i],order[j]]=[order[j],order[i]]; } }
+
+function renderAll(){ renderChips(); renderCard(); renderProg(); }
+
+document.getElementById("chips").addEventListener("click", e=>{
+  if(!e.target.dataset.c) return;
+  st.filter=e.target.dataset.c; save(); pos=0; flipped=false; buildOrder(); renderAll();
+});
+
+/* init */
+buildOrder(); renderAll();
+</script>
+</body>
+</html>
