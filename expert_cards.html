@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>建設業経理士2級 単語カード（総合）</title>
+<style>
+  :root{
+    --bg:#0f1720; --card:#17212b; --card2:#1e2a37; --line:#2b3a49;
+    --txt:#e8eef4; --sub:#9db0c2; --accent:#4ca3ff; --accent2:#38d39f;
+    --good:#38d39f; --warn:#ffb84c;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",sans-serif;
+    background:var(--bg);color:var(--txt);line-height:1.6;}
+  header{padding:14px 12px 8px;text-align:center;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#132030,#0f1720);position:sticky;top:0;z-index:10;}
+  header h1{margin:0;font-size:15px;}
+  header .prog{color:var(--sub);font-size:12px;margin-top:3px;}
+  .wrap{max-width:560px;margin:0 auto;padding:12px;}
+  .chips{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px;}
+  .chips button{flex:0 0 auto;background:var(--card);color:var(--sub);border:1px solid var(--line);
+    border-radius:20px;padding:7px 12px;font-size:12.5px;cursor:pointer;white-space:nowrap;}
+  .chips button.active{background:var(--accent);color:#06121f;border-color:var(--accent);font-weight:700;}
+  .counter{text-align:center;color:var(--sub);font-size:12px;margin:2px 0 10px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;
+    min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:26px 20px;text-align:center;cursor:pointer;user-select:none;position:relative;}
+  .card:active{transform:scale(.99);}
+  .card .cat{position:absolute;top:12px;left:14px;font-size:11px;color:var(--sub);
+    background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:2px 8px;}
+  .card .known-badge{position:absolute;top:12px;right:14px;font-size:12px;}
+  .front .term{font-size:26px;font-weight:800;}
+  .front .hint{position:absolute;bottom:14px;font-size:11px;color:var(--sub);}
+  .back{display:none;width:100%;}
+  .card.flipped .front{display:none;}
+  .card.flipped .back{display:block;}
+  .back .term{font-size:18px;font-weight:700;margin-bottom:10px;color:var(--accent2);}
+  .back .seitai{background:var(--card2);border:1px solid var(--line);border-radius:8px;
+    padding:5px 10px;display:inline-block;font-size:13px;margin-bottom:8px;}
+  .back .mean{font-size:14px;text-align:left;margin:8px 0;}
+  .kubun{display:inline-block;font-size:12px;padding:2px 9px;border-radius:10px;margin-top:6px;}
+  .kubun.asset{background:#183a2e;color:#7ee0b8;border:1px solid #2f6b52;}
+  .kubun.liab{background:#3a2a18;color:#f0c48a;border:1px solid #6b512f;}
+  .kubun.rev{background:#16304a;color:#8ac4f0;border:1px solid #2f5a80;}
+  .kubun.exp{background:#3a1e22;color:#f0a0a8;border:1px solid #6b3540;}
+  .kubun.note{background:var(--card2);color:var(--sub);border:1px solid var(--line);}
+  .controls{display:flex;gap:8px;margin-top:14px;}
+  .controls button{flex:1;border:none;border-radius:12px;padding:14px 0;font-size:15px;font-weight:700;cursor:pointer;}
+  .btn-known{background:var(--good);color:#06201a;}
+  .btn-still{background:var(--warn);color:#3a2600;}
+  .nav{display:flex;gap:8px;margin-top:8px;}
+  .nav button{flex:1;background:var(--card);color:var(--txt);border:1px solid var(--line);
+    border-radius:12px;padding:12px 0;font-size:14px;cursor:pointer;}
+  .tools{display:flex;justify-content:center;gap:14px;margin-top:12px;}
+  .tools button{background:transparent;color:var(--sub);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:12px;cursor:pointer;}
+  .empty{text-align:center;color:var(--sub);padding:40px 10px;}
+  footer{text-align:center;color:var(--sub);font-size:11px;padding:20px 12px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>📇 建設業経理士2級 単語カード（総合）</h1>
+  <div class="prog" id="prog"></div>
+</header>
+<div class="wrap">
+  <div class="chips" id="chips"></div>
+  <div class="counter" id="counter"></div>
+  <div id="cardArea"></div>
+  <div id="controls"></div>
+</div>
+<footer>タップでめくる／「覚えた」「まだ」で仕分け。進捗はこの端末に保存。<br>建設業経理士2級 単語カード（〜第7章）</footer>
+
+<script>
+"use strict";
+const LS="kenkei2_expert_cards_v1";
+const CARDS=[
+ // 建設業科目
+ {cat:"建設業科目",term:"完成工事未収入金",seitai:"＝売掛金",mean:"工事の代金を後日もらう権利",kubun:"資産",k:"asset"},
+ {cat:"建設業科目",term:"未成工事支出金",seitai:"＝仕掛品",mean:"工事にかかったお金の箱。完成で完成工事原価へ振替",kubun:"資産",k:"asset"},
+ {cat:"建設業科目",term:"工事未払金",seitai:"＝買掛金",mean:"工事関連の未払い",kubun:"負債",k:"liab"},
+ {cat:"建設業科目",term:"未成工事受入金",seitai:"＝前受金",mean:"先にもらった手付金",kubun:"負債",k:"liab"},
+ {cat:"建設業科目",term:"完成工事高",seitai:"＝売上",mean:"工事が完成した分の売上",kubun:"収益",k:"rev"},
+ {cat:"建設業科目",term:"完成工事原価",seitai:"＝売上原価",mean:"完成した工事にかかった原価",kubun:"費用",k:"exp"},
+ {cat:"建設業科目",term:"前渡金",seitai:"＝前払金",mean:"材料・外注に先に払ったお金",kubun:"資産",k:"asset"},
+ // 現金・当座(2章)
+ {cat:"現金・当座(2章)",term:"現金として扱うもの",seitai:"",mean:"通貨＋他人振出小切手・送金小切手・郵便為替証書・配当金領収証・期限到来後の公社債利札",kubun:"資産",k:"asset"},
+ {cat:"現金・当座(2章)",term:"有価証券利息",seitai:"",mean:"国債・社債などから受け取る利息",kubun:"収益",k:"rev"},
+ {cat:"現金・当座(2章)",term:"他人振出の小切手を受け取る",seitai:"",mean:"すぐ換金できる券なので『現金』で処理",kubun:"現金",k:"asset"},
+ {cat:"現金・当座(2章)",term:"自己振出の小切手（振出・戻り）",seitai:"",mean:"自分の当座から出る/戻る → 『当座預金』",kubun:"当座預金",k:"asset"},
+ {cat:"現金・当座(2章)",term:"当座借越",seitai:"",mean:"残高超過で振り出した分を銀行が立替（二勘定制）。入金時はまず借越を返す",kubun:"負債",k:"liab"},
+ {cat:"現金・当座(2章)",term:"未渡小切手",seitai:"",mean:"振り出したがまだ渡してない→当座預金を戻す。債務用→債務復活／費用用→未払金",kubun:"要仕訳",k:"note"},
+ {cat:"現金・当座(2章)",term:"未取付小切手",seitai:"",mean:"相手が銀行に未呈示",kubun:"銀行側・減算/仕訳不要",k:"note"},
+ {cat:"現金・当座(2章)",term:"時間外預入",seitai:"",mean:"銀行の入金処理が翌日",kubun:"銀行側・加算/仕訳不要",k:"note"},
+ {cat:"現金・当座(2章)",term:"未取立小切手",seitai:"",mean:"銀行がまだ取り立てていない",kubun:"銀行側・加算/仕訳不要",k:"note"},
+ {cat:"現金・当座(2章)",term:"連絡未通知",seitai:"",mean:"銀行処理済・当社が知らなかった",kubun:"企業側/仕訳必要",k:"note"},
+ {cat:"現金・当座(2章)",term:"誤記入",seitai:"",mean:"当社の記帳ミス",kubun:"企業側/仕訳必要",k:"note"},
+ {cat:"現金・当座(2章)",term:"銀行勘定調整の大原則",seitai:"",mean:"銀行が遅れてる=銀行側(仕訳不要)／自分が知らない・間違えた=企業側(仕訳必要)",kubun:"note",k:"note"},
+ // 仕入売上(3章)
+ {cat:"仕入売上(3章)",term:"値引き",seitai:"",mean:"キズ・品質でまける。売上/仕入そのものを減らす（コスト減）",kubun:"減額",k:"note"},
+ {cat:"仕入売上(3章)",term:"割戻し",seitai:"リベート",mean:"大量取引のお礼で戻す。売上/仕入を減らす（コスト減）",kubun:"減額",k:"note"},
+ {cat:"仕入売上(3章)",term:"仕入割引",seitai:"",mean:"買掛金を早く払って受ける割引（利息の性格）",kubun:"営業外収益",k:"rev"},
+ {cat:"仕入売上(3章)",term:"売上割引",seitai:"",mean:"売掛金を早く払ってもらうため与える割引",kubun:"営業外費用",k:"exp"},
+ {cat:"仕入売上(3章)",term:"仕入諸掛（引取運賃）",seitai:"",mean:"当社負担の引取運賃は材料の原価に含める（未成工事支出金へ）",kubun:"原価に含める",k:"note"},
+ {cat:"仕入売上(3章)",term:"発送費",seitai:"",mean:"売る時・当社負担で発送 → 費用（荷造運賃など）",kubun:"費用",k:"exp"},
+ // 手形(4章)
+ {cat:"手形(4章)",term:"受取手形",seitai:"",mean:"もらった手形（あとで代金をもらえる権利）",kubun:"資産",k:"asset"},
+ {cat:"手形(4章)",term:"支払手形",seitai:"",mean:"振り出した手形（あとで払う義務）",kubun:"負債",k:"liab"},
+ {cat:"手形(4章)",term:"手形で支払う（見分け）",seitai:"",mean:"振り出す＝支払手形（負債↑）／裏書譲渡＝受取手形が減る（資産↓）",kubun:"note",k:"note"},
+ {cat:"手形(4章)",term:"手形貸付金",seitai:"",mean:"お金を貸して手形を受け取った（借り手が振り出す）",kubun:"資産",k:"asset"},
+ {cat:"手形(4章)",term:"手形借入金",seitai:"",mean:"お金を借りて手形を振り出した",kubun:"負債",k:"liab"},
+ {cat:"手形(4章)",term:"営業外受取手形",seitai:"",mean:"本業以外（固定資産の売却など）で受け取った手形",kubun:"資産",k:"asset"},
+ {cat:"手形(4章)",term:"不渡手形",seitai:"",mean:"不渡りになった手形の振替先（請求費用も乗せられる）",kubun:"資産",k:"asset"},
+ {cat:"手形(4章)",term:"手形売却損",seitai:"",mean:"受取手形を割り引いた（早く現金化した）ときの割引料",kubun:"費用(営業外)",k:"exp"},
+ {cat:"手形(4章)",term:"保証債務",seitai:"",mean:"割引/裏書で残る『もし不渡りなら払う』リスク",kubun:"負債",k:"liab"},
+ {cat:"手形(4章)",term:"保証債務費用",seitai:"",mean:"保証債務を立てるときの相手科目",kubun:"費用",k:"exp"},
+ {cat:"手形(4章)",term:"保証債務取崩益",seitai:"",mean:"手形が無事決済されリスクが消えたときの収益",kubun:"収益",k:"rev"},
+ {cat:"手形(4章)",term:"為替手形",seitai:"3人",mean:"AがBに『Cに払って』と指示。振出人=手形科目なし／名宛人=支払手形／受取人=受取手形",kubun:"note",k:"note"},
+ {cat:"手形(4章)",term:"自己振出手形の回収",seitai:"",mean:"自分の手形が戻る→支払手形を消す（借方）。受取手形にしない",kubun:"note",k:"note"},
+ // 経過勘定(6章)
+ {cat:"経過勘定(6章)",term:"前払費用",seitai:"",mean:"先に払った・来期分（繰り延べ）",kubun:"資産",k:"asset"},
+ {cat:"経過勘定(6章)",term:"前受収益",seitai:"",mean:"先にもらった・来期分（繰り延べ）",kubun:"負債",k:"liab"},
+ {cat:"経過勘定(6章)",term:"未払費用",seitai:"",mean:"今期発生・まだ払ってない（見越し）",kubun:"負債",k:"liab"},
+ {cat:"経過勘定(6章)",term:"未収収益",seitai:"",mean:"今期発生・まだもらってない（見越し）",kubun:"資産",k:"asset"},
+ {cat:"経過勘定(6章)",term:"経過勘定の見分け",seitai:"",mean:"前=受け渡し済み(繰り延べ)／未=まだ(見越し)。費用側=前払・未払／収益側=前受・未収",kubun:"note",k:"note"},
+ // 有価証券(7章)
+ {cat:"有価証券(7章)",term:"満期保有目的債券の分類",seitai:"1年基準",mean:"満期まで1年超=投資有価証券(固定)／1年以内=有価証券(流動)に振替",kubun:"note",k:"note"}
+];
+
+let st=load();
+function load(){try{return JSON.parse(localStorage.getItem(LS))||{};}catch(e){return{};}}
+function save(){localStorage.setItem(LS,JSON.stringify(st));}
+st.known=st.known||{}; st.filter=st.filter||"すべて";
+CARDS.forEach((c,i)=>c.id="k"+i);
+const CATS=["すべて","建設業科目","現金・当座(2章)","仕入売上(3章)","手形(4章)","経過勘定(6章)","有価証券(7章)","まだ"];
+let order=[],pos=0,flipped=false;
+
+function buildOrder(){
+  let list;
+  if(st.filter==="まだ") list=CARDS.filter(c=>!st.known[c.id]);
+  else if(st.filter==="すべて") list=CARDS.slice();
+  else list=CARDS.filter(c=>c.cat===st.filter);
+  order=list.map(c=>c.id);
+  if(pos>=order.length)pos=0;
+}
+function renderChips(){
+  document.getElementById("chips").innerHTML=CATS.map(c=>`<button data-c="${c}" class="${st.filter===c?'active':''}">${c}</button>`).join("");
+}
+function renderProg(){
+  const known=CARDS.filter(c=>st.known[c.id]).length;
+  document.getElementById("prog").textContent=`覚えた ${known} / 全 ${CARDS.length} 枚`;
+}
+function renderCard(){
+  const area=document.getElementById("cardArea"),ctrl=document.getElementById("controls");
+  if(order.length===0){area.innerHTML=`<div class="empty">このカテゴリのカードはありません🎉</div>`;ctrl.innerHTML="";document.getElementById("counter").textContent="";return;}
+  const c=CARDS.find(x=>x.id===order[pos]),isKnown=!!st.known[c.id];
+  document.getElementById("counter").textContent=`${pos+1} / ${order.length} 枚（${st.filter}）`;
+  area.innerHTML=`<div class="card ${flipped?'flipped':''}" id="theCard">
+    <div class="cat">${c.cat}</div><div class="known-badge">${isKnown?'✅':''}</div>
+    <div class="front"><div class="term">${c.term}</div><div class="hint">タップで答え</div></div>
+    <div class="back"><div class="term">${c.term}</div>
+      ${c.seitai?`<div><span class="seitai">${c.seitai}</span></div>`:''}
+      <div class="mean">${c.mean}</div>
+      <div><span class="kubun ${c.k}">${c.kubun}</span></div></div></div>`;
+  ctrl.innerHTML=`<div class="controls"><button class="btn-still" id="still">まだ</button><button class="btn-known" id="known">覚えた</button></div>
+    <div class="nav"><button id="prev">← 前</button><button id="next">次 →</button></div>
+    <div class="tools"><button id="shuffle">🔀 シャッフル</button><button id="reset">進捗リセット</button></div>`;
+  document.getElementById("theCard").onclick=()=>{flipped=!flipped;renderCard();};
+  document.getElementById("known").onclick=()=>{st.known[c.id]=true;save();next();};
+  document.getElementById("still").onclick=()=>{delete st.known[c.id];save();next();};
+  document.getElementById("prev").onclick=()=>{pos=(pos-1+order.length)%order.length;flipped=false;renderCard();renderProg();};
+  document.getElementById("next").onclick=next;
+  document.getElementById("shuffle").onclick=()=>{shuffle();pos=0;flipped=false;renderCard();};
+  document.getElementById("reset").onclick=()=>{if(confirm("覚えた記録を全部消しますか?")){st.known={};save();buildOrder();renderAll();}};
+  renderProg();
+}
+function next(){
+  if(st.filter==="まだ"){buildOrder();if(order.length===0){renderCard();return;}if(pos>=order.length)pos=0;}
+  else pos=(pos+1)%order.length;
+  flipped=false;renderCard();renderProg();
+}
+function shuffle(){for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]];}}
+function renderAll(){renderChips();renderCard();renderProg();}
+document.getElementById("chips").addEventListener("click",e=>{if(!e.target.dataset.c)return;st.filter=e.target.dataset.c;save();pos=0;flipped=false;buildOrder();renderAll();});
+buildOrder();renderAll();
+</script>
+</body>
+</html>
